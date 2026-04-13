@@ -6,6 +6,20 @@ const app = express();
 app.get(`/api/classify`, async (req, res) => {
   let {name} = req.query;
 
+  if (name === undefined || name === ""){
+    res.status(400).json({
+        status: "error",
+        message: "Missing or empty name parameter",
+      });
+  }
+
+  if (typeof(name) !== "string"){
+    res.status(422).json({
+        status: "error",
+        message: "Name is not a string",
+      });
+  }
+
   try {
     const response = await fetch(`https://api.genderize.io/?name=${name}`);
     const data = await response.json();
