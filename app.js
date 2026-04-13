@@ -4,8 +4,10 @@ const port = 9000;
 const app = express();
 
 app.get(`/api/classify`, async (req, res) => {
+  let {name} = req.query;
+
   try {
-    const response = await fetch("https://api.genderize.io/");
+    const response = await fetch(`https://api.genderize.io/?name=${name}`);
     const data = await response.json();
 
     if (data.gender === null || data.count === 0) {
