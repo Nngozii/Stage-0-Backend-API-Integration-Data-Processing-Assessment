@@ -1,23 +1,27 @@
 const express = require("express");
+var cors = require('cors')
+
 const port = 9000;
 
 const app = express();
 
-app.get(`/api/classify`, async (req, res) => {
-  let {name} = req.query;
+app.use(cors())
 
-  if (name === undefined || name === ""){
-    res.status(400).json({
-        status: "error",
-        message: "Missing or empty name parameter",
-      });
+app.get(`/api/classify`, async (req, res) => {
+  let { name } = req.query;
+
+  if (name === undefined || name === "") {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing or empty name parameter",
+    });
   }
 
-  if (typeof(name) !== "string"){
-    res.status(422).json({
-        status: "error",
-        message: "Name is not a string",
-      });
+  if (typeof name !== "string") {
+    return res.status(422).json({
+      status: "error",
+      message: "Name is not a string",
+    });
   }
 
   try {
@@ -47,12 +51,16 @@ app.get(`/api/classify`, async (req, res) => {
       },
     });
   } catch (err) {
-    if (err instanceof SyntaxError) {
-      return res.status(400).json({ status: "error", message: err.message });
-    } else if (err instanceof TypeError) {
-      return res.status(422).json({ status: "error", message: err.message });
+    if (err.code === "ECONNABORTED" || err.code === "ETIMEDOUT") {
+      return res.status(502).json({
+        status: "error",
+        message: "Upstream API timed out",
+      });
     } else {
-      res.status(500).json({ status: "error", message: err.message });
+      res.status(500).json({
+        status: "error",
+        message: "Internal Server Error",
+      });
     }
   }
 });
